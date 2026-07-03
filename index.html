@@ -532,7 +532,6 @@
     });
 
     logoutBtn.addEventListener("click", function(){
-      if (!confirm("Vuoi disconnetterti e cambiare coppia?")) return;
       localStorage.removeItem(STORAGE_CODE);
       localStorage.removeItem(STORAGE_ROLE);
       if (mqttClient){ mqttClient.end(true); mqttClient = null; }

@@ -332,6 +332,42 @@
     font-size:.7rem;
     color:#b0a49e;
   }
+  footer.hint details{
+    margin-top:10px;
+    text-align:left;
+    background:#fff;
+    border-radius:12px;
+    padding:10px 14px;
+    border:1px solid #f0e0da;
+  }
+  footer.hint summary{
+    cursor:pointer;
+    font-weight:600;
+    color:#8a7a72;
+    font-size:.78rem;
+  }
+  footer.hint details p{
+    margin:8px 0 6px;
+    font-size:.75rem;
+    color:#8a7a72;
+  }
+  #ntfy-topic{
+    display:block;
+    background:#faf3ef;
+    border-radius:8px;
+    padding:8px 10px;
+    font-size:.8rem;
+    word-break:break-all;
+    cursor:pointer;
+    border:1px dashed #d8c4b8;
+  }
+  .copy-feedback{
+    font-size:.7rem;
+    color:var(--primary-dark,#e14e73);
+    min-height:1em;
+    display:block;
+    margin-top:4px;
+  }
 </style>
 </head>
 <body>
@@ -386,7 +422,17 @@
     <button class="ring-btn" id="ring-btn">FAI LO SQUILLO! ⚡</button>
     <div class="sent-toast" id="sent-toast">Squillo inviato! 📨</div>
 
-    <footer class="hint">Funziona in tempo reale se il/la partner ha la pagina aperta.</footer>
+    <footer class="hint">
+      Con la pagina aperta lo squillo arriva in tempo reale.
+      <details>
+        <summary>🔔 Vuoi le notifiche anche a pagina chiusa?</summary>
+        <p>1. Installa l'app gratuita <b>ntfy</b> (App Store / Play Store)</p>
+        <p>2. Nell'app tocca <b>+</b> e iscriviti a questo topic (tocca per copiarlo):</p>
+        <code id="ntfy-topic"></code>
+        <span class="copy-feedback" id="copy-feedback"></span>
+        <p>Fatto! Da ora gli squilli arriveranno come notifica push anche col telefono in tasca. 💕</p>
+      </details>
+    </footer>
   </div>
 
   <!-- ============ OVERLAY SQUILLO RICEVUTO ============ -->
@@ -446,6 +492,10 @@
     var mqttTopic = null;
     var myRole = null;
     var myCoupleCode = null;
+    // Topic ntfy.sh per le notifiche push a pagina chiusa:
+    // ognuno si iscrive al PROPRIO topic e pubblica su quello del partner.
+    var ntfySubTopic = null;
+    var ntfyPubTopic = null;
 
     /* ---------------- Hash semplice per generare un topic privato ---------------- */
     function hashCode(str){
@@ -516,6 +566,14 @@
       mainScreen.classList.remove("hidden");
 
       mqttTopic = "ihih-squillo-v1-" + hashCode(code.toLowerCase());
+      ntfySubTopic = mqttTopic + "-" + role;
+      ntfyPubTopic = mqttTopic + "-" + (role === "boy" ? "girl" : "boy");
+      document.getElementById("ntfy-topic").textContent = ntfySubTopic;
+
+      if ("Notification" in window && Notification.permission === "default"){
+        Notification.requestPermission();
+      }
+
       connectMqtt();
 
       // canale extra locale: utile per test rapidi tra due schede dello stesso browser
@@ -584,6 +642,15 @@
       // sempre scritto anche in localStorage, per il canale multi-tab di test
       localStorage.setItem(STORAGE_LAST_PING, JSON.stringify(payload));
 
+      // notifica push via ntfy.sh: raggiunge il partner anche a pagina chiusa
+      if (ntfyPubTopic){
+        fetch("https://ntfy.sh/" + ntfyPubTopic, {
+          method: "POST",
+          body: payload.emoji + " " + payload.text + " — L'altro ti sta pensando!",
+          headers: { "Title": "Squillo in arrivo!", "Priority": "high", "Tags": "two_hearts" }
+        }).catch(function(){ /* offline o bloccato: lo squillo MQTT resta comunque */ });
+      }
+
       showSentToast();
       cooldown();
     });
@@ -614,6 +681,15 @@
 
       if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
 
+      // se la scheda è in background, mostra anche una notifica del browser
+      if (document.hidden && "Notification" in window && Notification.permission === "granted"){
+        try{
+          new Notification("Squillo! " + (payload.emoji || "❤️"), {
+            body: (payload.text || "") + " — L'altro ti sta pensando!"
+          });
+        } catch(err){ /* alcuni browser mobili la bloccano: pazienza */ }
+      }
+
       clearTimeout(handleIncomingRing._t);
       handleIncomingRing._t = setTimeout(closeRingOverlay, 4500);
     }
@@ -623,6 +699,18 @@
       document.body.classList.remove("ring-flash");
     }
     ringOverlay.addEventListener("click", closeRingOverlay);
+
+    /* ---------------- Copia topic ntfy ---------------- */
+    document.getElementById("ntfy-topic").addEventListener("click", function(){
+      var topic = this.textContent;
+      var feedback = document.getElementById("copy-feedback");
+      function done(){ feedback.textContent = "Copiato! ✅"; setTimeout(function(){ feedback.textContent = ""; }, 2000); }
+      if (navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(topic).then(done).catch(function(){ feedback.textContent = topic; });
+      } else {
+        feedback.textContent = "Copialo a mano 🙂";
+      }
+    });
 
     /* ---------------- Ripristino sessione salvata ---------------- */
     (function init(){

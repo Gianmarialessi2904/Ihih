@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#ff6f91">
+<title>Squillo 💌 | Per Noi Due</title>
+<style>
+  :root{
+    --radius: 22px;
+    --shadow: 0 10px 30px rgba(0,0,0,.12);
+    --transition: .25s cubic-bezier(.4,0,.2,1);
+  }
+
+  /* ---------- Tema neutro (schermata iniziale) ---------- */
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family:'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+    background: linear-gradient(160deg,#fef6f0,#fbeaf3);
+    color:#3a2e2e;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    box-sizing:border-box;
+    transition: background var(--transition);
+    overflow-x:hidden;
+  }
+
+  /* ---------- Tema Ragazzo → Bubu (caldo/marrone) ---------- */
+  body.theme-boy{
+    --primary:#8a5a3b;
+    --primary-dark:#6e4529;
+    --bg-grad-a:#fff4e8;
+    --bg-grad-b:#f3ded0;
+    --bubble:#fff1e2;
+    background: linear-gradient(160deg,var(--bg-grad-a),var(--bg-grad-b));
+  }
+
+  /* ---------- Tema Ragazza → Dudu (rosa pastello) ---------- */
+  body.theme-girl{
+    --primary:#ff6f91;
+    --primary-dark:#e14e73;
+    --bg-grad-a:#fff0f5;
+    --bg-grad-b:#ffe0ec;
+    --bubble:#fff0f6;
+    background: linear-gradient(160deg,var(--bg-grad-a),var(--bg-grad-b));
+  }
+
+  .hidden{ display:none !important; }
+
+  .card{
+    width:100%;
+    max-width:420px;
+    background:rgba(255,255,255,.75);
+    backdrop-filter: blur(6px);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding:32px 26px;
+    box-sizing:border-box;
+    text-align:center;
+    animation: pop .4s var(--transition);
+  }
+
+  @keyframes pop{
+    from{ opacity:0; transform: scale(.92) translateY(10px); }
+    to{ opacity:1; transform: scale(1) translateY(0); }
+  }
+
+  h1{
+    font-size:1.5rem;
+    margin:0 0 6px;
+  }
+  .subtitle{
+    font-size:.92rem;
+    color:#7a6a63;
+    margin:0 0 26px;
+  }
+
+  label{
+    display:block;
+    text-align:left;
+    font-size:.82rem;
+    font-weight:600;
+    color:#8a7a72;
+    margin:16px 0 6px;
+  }
+
+  input[type="text"], select{
+    width:100%;
+    padding:14px 16px;
+    border-radius:14px;
+    border:2px solid #f0e0da;
+    font-size:1rem;
+    box-sizing:border-box;
+    background:#fff;
+    outline:none;
+    transition:border-color var(--transition);
+    -webkit-appearance:none;
+    appearance:none;
+  }
+  input[type="text"]:focus, select:focus{
+    border-color: var(--primary, #ff6f91);
+  }
+
+  .role-preview{
+    margin-top:18px;
+    display:flex;
+    justify-content:center;
+  }
+  .role-preview img{
+    width:90px;
+    height:90px;
+    border-radius:50%;
+    object-fit:cover;
+    box-shadow: var(--shadow);
+    background:#fff;
+    border:3px solid #fff;
+    transition: transform var(--transition);
+  }
+
+  .btn-primary{
+    width:100%;
+    margin-top:26px;
+    padding:16px;
+    border:none;
+    border-radius:16px;
+    background: var(--primary, #ff6f91);
+    color:#fff;
+    font-size:1.05rem;
+    font-weight:700;
+    letter-spacing:.3px;
+    cursor:pointer;
+    box-shadow: 0 8px 20px rgba(0,0,0,.15);
+    transition: transform .15s ease, background var(--transition);
+  }
+  .btn-primary:active{ transform: scale(.96); }
+  .btn-primary:disabled{ opacity:.55; cursor:not-allowed; transform:none; }
+
+  /* ---------- Main screen ---------- */
+  #main-screen.card{ max-width:440px; padding-top:20px; }
+
+  .top-bar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    font-size:.75rem;
+    color:#8a7a72;
+    margin-bottom:10px;
+  }
+  .status-dot{
+    display:inline-block;
+    width:8px;height:8px;
+    border-radius:50%;
+    background:#ccc;
+    margin-right:5px;
+    vertical-align:middle;
+    transition: background var(--transition);
+  }
+  .status-dot.online{ background:#4caf50; box-shadow:0 0 6px #4caf50; }
+  .status-dot.offline{ background:#e05353; }
+
+  .logout-link{
+    background:none;
+    border:none;
+    color:#a08a80;
+    font-size:.75rem;
+    text-decoration:underline;
+    cursor:pointer;
+  }
+
+  .avatar-wrap{
+    position:relative;
+    display:flex;
+    justify-content:center;
+    margin: 6px 0 14px;
+  }
+  .avatar-wrap img{
+    width:150px;
+    height:150px;
+    border-radius:50%;
+    object-fit:cover;
+    background:#fff;
+    border:5px solid #fff;
+    box-shadow: var(--shadow);
+    animation: floaty 3.5s ease-in-out infinite;
+  }
+  @keyframes floaty{
+    0%,100%{ transform: translateY(0) rotate(0deg); }
+    50%{ transform: translateY(-8px) rotate(-2deg); }
+  }
+
+  .couple-name{
+    font-weight:700;
+    font-size:1.15rem;
+    margin:0 0 2px;
+  }
+  .couple-sub{
+    font-size:.82rem;
+    color:#8a7a72;
+    margin:0 0 20px;
+  }
+
+  .msg-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+    margin-bottom:22px;
+  }
+  .msg-option{
+    border:2px solid #f0e0da;
+    background:#fff;
+    border-radius:14px;
+    padding:12px 6px;
+    font-size:.85rem;
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:4px;
+    transition: all var(--transition);
+  }
+  .msg-option .emoji{ font-size:1.5rem; }
+  .msg-option.selected{
+    border-color: var(--primary, #ff6f91);
+    background: color-mix(in srgb, var(--primary, #ff6f91) 12%, white);
+    transform: scale(1.03);
+  }
+
+  .ring-btn{
+    width:100%;
+    padding:22px;
+    border:none;
+    border-radius:20px;
+    background: linear-gradient(135deg, var(--primary,#ff6f91), var(--primary-dark,#e14e73));
+    color:#fff;
+    font-size:1.25rem;
+    font-weight:800;
+    letter-spacing:.3px;
+    cursor:pointer;
+    box-shadow: 0 10px 24px rgba(0,0,0,.2);
+    animation: pulse 2.2s infinite;
+  }
+  .ring-btn:active{ transform: scale(.95); animation:none; }
+  .ring-btn:disabled{ opacity:.6; animation:none; cursor:not-allowed; }
+
+  @keyframes pulse{
+    0%{ box-shadow: 0 10px 24px rgba(0,0,0,.2), 0 0 0 0 color-mix(in srgb, var(--primary,#ff6f91) 55%, transparent); }
+    70%{ box-shadow: 0 10px 24px rgba(0,0,0,.2), 0 0 0 16px transparent; }
+    100%{ box-shadow: 0 10px 24px rgba(0,0,0,.2), 0 0 0 0 transparent; }
+  }
+
+  .sent-toast{
+    margin-top:14px;
+    font-size:.85rem;
+    color: var(--primary-dark,#e14e73);
+    font-weight:600;
+    min-height:1.2em;
+    opacity:0;
+    transition: opacity var(--transition);
+  }
+  .sent-toast.show{ opacity:1; }
+
+  /* ---------- Flash quando arriva uno squillo ---------- */
+  body.ring-flash{
+    animation: flashBg .5s ease-in-out 3;
+  }
+  @keyframes flashBg{
+    0%,100%{ background-color: transparent; }
+    50%{ background-color: var(--primary, #ff6f91); }
+  }
+
+  /* ---------- Fumetto notifica squillo ---------- */
+  #ring-overlay{
+    position:fixed;
+    inset:0;
+    z-index:999;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    background: rgba(0,0,0,.35);
+    box-sizing:border-box;
+    animation: fadeIn .2s ease;
+  }
+  @keyframes fadeIn{ from{opacity:0;} to{opacity:1;} }
+
+  .bubble{
+    background: var(--bubble, #fff);
+    border-radius: 26px;
+    padding:34px 26px;
+    max-width:320px;
+    width:100%;
+    text-align:center;
+    box-shadow: 0 20px 50px rgba(0,0,0,.35);
+    position:relative;
+    animation: bubbleIn .35s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes bubbleIn{
+    from{ transform: scale(.6) translateY(30px); opacity:0; }
+    to{ transform: scale(1) translateY(0); opacity:1; }
+  }
+  .bubble .big-emoji{
+    font-size:4rem;
+    display:block;
+    margin-bottom:10px;
+    animation: bounce .6s ease infinite alternate;
+  }
+  @keyframes bounce{
+    from{ transform: translateY(0); }
+    to{ transform: translateY(-10px); }
+  }
+  .bubble h2{
+    margin:0 0 6px;
+    font-size:1.2rem;
+    color:#3a2e2e;
+  }
+  .bubble p{
+    margin:0;
+    font-size:.95rem;
+    color:#6b5c56;
+  }
+  .bubble .tap-hint{
+    margin-top:16px;
+    font-size:.72rem;
+    color:#b0a49e;
+  }
+
+  footer.hint{
+    margin-top:18px;
+    font-size:.7rem;
+    color:#b0a49e;
+  }
+</style>
+</head>
+<body>
+
+  <!-- ============ SCHERMATA DI CONFIGURAZIONE ============ -->
+  <div id="setup-screen" class="card">
+    <h1>Squillo 💌</h1>
+    <p class="subtitle">Un pensiero veloce per chi ami, anche da lontano.</p>
+
+    <label for="couple-code">Codice di coppia segreto</label>
+    <input type="text" id="couple-code" placeholder="es. lucertola-blu" autocomplete="off">
+
+    <label for="role-select">Sei...</label>
+    <select id="role-select">
+      <option value="" disabled selected>Scegli il tuo ruolo</option>
+      <option value="boy">🧸 Ragazzo (Bubu)</option>
+      <option value="girl">🐻 Ragazza (Dudu)</option>
+    </select>
+
+    <div class="role-preview">
+      <!-- TODO: sostituire con l'URL reale dell'immagine dell'orsetto scelto -->
+      <img id="setup-avatar" src="" alt="Anteprima orsetto" class="hidden">
+    </div>
+
+    <button class="btn-primary" id="enter-btn" disabled>Entra 💕</button>
+  </div>
+
+  <!-- ============ INTERFACCIA PRINCIPALE ============ -->
+  <div id="main-screen" class="card hidden">
+    <div class="top-bar">
+      <span><span id="status-dot" class="status-dot offline"></span><span id="status-text">Connessione...</span></span>
+      <button class="logout-link" id="logout-btn">cambia coppia</button>
+    </div>
+
+    <div class="avatar-wrap">
+      <!-- TODO: sostituire con l'URL reale dell'immagine di Bubu (marrone) o Dudu (bianco) -->
+      <img id="main-avatar" src="" alt="Il tuo orsetto">
+    </div>
+
+    <p class="couple-name" id="role-label">Bubu 🧸</p>
+    <p class="couple-sub">Scegli un pensiero e fai squillare il cuore del tuo/a partner</p>
+
+    <div class="msg-grid" id="msg-grid">
+      <button class="msg-option" data-emoji="❤️" data-text="Ti amo"><span class="emoji">❤️</span>Ti amo</button>
+      <button class="msg-option" data-emoji="😢" data-text="Mi manchi"><span class="emoji">😢</span>Mi manchi</button>
+      <button class="msg-option" data-emoji="💋" data-text="Un bacio"><span class="emoji">💋</span>Un bacio</button>
+      <button class="msg-option" data-emoji="🔥" data-text="Mi gasi"><span class="emoji">🔥</span>Mi gasi</button>
+      <button class="msg-option" data-emoji="🥰" data-text="Penso a te"><span class="emoji">🥰</span>Penso a te</button>
+      <button class="msg-option" data-emoji="😴" data-text="Buonanotte"><span class="emoji">😴</span>Buonanotte</button>
+    </div>
+
+    <button class="ring-btn" id="ring-btn">FAI LO SQUILLO! ⚡</button>
+    <div class="sent-toast" id="sent-toast">Squillo inviato! 📨</div>
+
+    <footer class="hint">Funziona in tempo reale se il/la partner ha la pagina aperta.</footer>
+  </div>
+
+  <!-- ============ OVERLAY SQUILLO RICEVUTO ============ -->
+  <div id="ring-overlay" class="hidden">
+    <div class="bubble" id="ring-bubble">
+      <span class="big-emoji" id="ring-emoji">❤️</span>
+      <h2>L'altro ti sta pensando!</h2>
+      <p id="ring-text">Ti amo</p>
+      <p class="tap-hint">tocca per chiudere</p>
+    </div>
+  </div>
+
+  <!-- Libreria MQTT per la comunicazione realtime tramite broker pubblico (nessuna registrazione richiesta) -->
+  <script src="https://cdn.jsdelivr.net/npm/mqtt@5/dist/mqtt.min.js"></script>
+  <script>
+  (function(){
+    "use strict";
+
+    /* ---------------- Placeholder avatar (sostituibili) ---------------- */
+    // TODO: sostituisci questi due placeholder con gli URL reali delle immagini
+    // dei peluche Bubu (marrone) e Dudu (bianco).
+    var AVATARS = {
+      boy:  "data:image/svg+xml;utf8," + encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><circle cx="100" cy="100" r="100" fill="%238a5a3b"/><text x="50%" y="55%" font-size="90" text-anchor="middle" dominant-baseline="middle">🧸</text></svg>'
+      ),
+      girl: "data:image/svg+xml;utf8," + encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><circle cx="100" cy="100" r="100" fill="%23ffd6e5"/><text x="50%" y="55%" font-size="90" text-anchor="middle" dominant-baseline="middle">🐻</text></svg>'
+      )
+    };
+    var ROLE_LABEL = { boy: "Bubu 🧸", girl: "Dudu 🐻" };
+
+    var STORAGE_CODE = "ihih_couple_code";
+    var STORAGE_ROLE = "ihih_role";
+    var STORAGE_LAST_PING = "ihih_last_ping"; // usato anche come canale locale multi-tab
+
+    var setupScreen = document.getElementById("setup-screen");
+    var mainScreen   = document.getElementById("main-screen");
+    var codeInput    = document.getElementById("couple-code");
+    var roleSelect   = document.getElementById("role-select");
+    var setupAvatar  = document.getElementById("setup-avatar");
+    var enterBtn     = document.getElementById("enter-btn");
+    var logoutBtn    = document.getElementById("logout-btn");
+    var mainAvatar   = document.getElementById("main-avatar");
+    var roleLabel    = document.getElementById("role-label");
+    var msgGrid      = document.getElementById("msg-grid");
+    var ringBtn      = document.getElementById("ring-btn");
+    var sentToast    = document.getElementById("sent-toast");
+    var statusDot    = document.getElementById("status-dot");
+    var statusText   = document.getElementById("status-text");
+    var ringOverlay  = document.getElementById("ring-overlay");
+    var ringEmoji    = document.getElementById("ring-emoji");
+    var ringText     = document.getElementById("ring-text");
+
+    var selectedOption = { emoji: "❤️", text: "Ti amo" };
+    var myClientId = "ihih-" + Math.random().toString(16).slice(2, 10);
+    var mqttClient = null;
+    var mqttTopic = null;
+    var myRole = null;
+    var myCoupleCode = null;
+
+    /* ---------------- Hash semplice per generare un topic privato ---------------- */
+    function hashCode(str){
+      var hash = 5381;
+      for (var i = 0; i < str.length; i++){
+        hash = ((hash << 5) + hash) + str.charCodeAt(i);
+        hash = hash & hash;
+      }
+      return Math.abs(hash).toString(36);
+    }
+
+    /* ---------------- Setup screen: anteprima e validazione ---------------- */
+    function updateSetupPreview(){
+      var role = roleSelect.value;
+      if (role){
+        setupAvatar.src = AVATARS[role];
+        setupAvatar.classList.remove("hidden");
+      } else {
+        setupAvatar.classList.add("hidden");
+      }
+      enterBtn.disabled = !(codeInput.value.trim().length >= 3 && role);
+      document.body.className = role ? "theme-" + role : "";
+    }
+    codeInput.addEventListener("input", updateSetupPreview);
+    roleSelect.addEventListener("change", updateSetupPreview);
+
+    enterBtn.addEventListener("click", function(){
+      var code = codeInput.value.trim();
+      var role = roleSelect.value;
+      if (!code || !role) return;
+      localStorage.setItem(STORAGE_CODE, code);
+      localStorage.setItem(STORAGE_ROLE, role);
+      startApp(code, role);
+    });
+
+    logoutBtn.addEventListener("click", function(){
+      if (!confirm("Vuoi disconnetterti e cambiare coppia?")) return;
+      localStorage.removeItem(STORAGE_CODE);
+      localStorage.removeItem(STORAGE_ROLE);
+      if (mqttClient){ mqttClient.end(true); mqttClient = null; }
+      mainScreen.classList.add("hidden");
+      setupScreen.classList.remove("hidden");
+      codeInput.value = "";
+      roleSelect.value = "";
+      updateSetupPreview();
+    });
+
+    /* ---------------- Selezione messaggio rapido ---------------- */
+    msgGrid.addEventListener("click", function(e){
+      var btn = e.target.closest(".msg-option");
+      if (!btn) return;
+      Array.prototype.forEach.call(msgGrid.children, function(el){ el.classList.remove("selected"); });
+      btn.classList.add("selected");
+      selectedOption = { emoji: btn.dataset.emoji, text: btn.dataset.text };
+    });
+    // seleziona la prima opzione di default
+    if (msgGrid.firstElementChild) msgGrid.firstElementChild.classList.add("selected");
+
+    /* ---------------- Avvio app principale ---------------- */
+    function startApp(code, role){
+      myCoupleCode = code;
+      myRole = role;
+      document.body.className = "theme-" + role;
+      mainAvatar.src = AVATARS[role];
+      roleLabel.textContent = ROLE_LABEL[role];
+
+      setupScreen.classList.add("hidden");
+      mainScreen.classList.remove("hidden");
+
+      mqttTopic = "ihih-squillo-v1-" + hashCode(code.toLowerCase());
+      connectMqtt();
+
+      // canale extra locale: utile per test rapidi tra due schede dello stesso browser
+      window.addEventListener("storage", function(e){
+        if (e.key !== STORAGE_LAST_PING || !e.newValue) return;
+        try {
+          var payload = JSON.parse(e.newValue);
+          handleIncomingRing(payload);
+        } catch(err){ /* ignora payload non validi */ }
+      });
+    }
+
+    /* ---------------- Connessione MQTT (broker pubblico, nessuna chiave richiesta) ---------------- */
+    function connectMqtt(){
+      setStatus(false, "Connessione...");
+      try{
+        mqttClient = mqtt.connect("wss://broker.emqx.io:8084/mqtt", {
+          clientId: myClientId,
+          clean: true,
+          reconnectPeriod: 3000,
+          connectTimeout: 8000
+        });
+      } catch(err){
+        setStatus(false, "Offline (solo locale)");
+        return;
+      }
+
+      mqttClient.on("connect", function(){
+        setStatus(true, "Connesso");
+        mqttClient.subscribe(mqttTopic);
+      });
+      mqttClient.on("reconnect", function(){ setStatus(false, "Riconnessione..."); });
+      mqttClient.on("close", function(){ setStatus(false, "Offline"); });
+      mqttClient.on("error", function(){ setStatus(false, "Offline"); });
+
+      mqttClient.on("message", function(topic, message){
+        if (topic !== mqttTopic) return;
+        try{
+          var payload = JSON.parse(message.toString());
+          if (payload.clientId === myClientId) return; // ignora i propri messaggi
+          handleIncomingRing(payload);
+        } catch(err){ /* payload non valido, ignora */ }
+      });
+    }
+
+    function setStatus(online, text){
+      statusDot.className = "status-dot " + (online ? "online" : "offline");
+      statusText.textContent = text;
+    }
+
+    /* ---------------- Invio squillo ---------------- */
+    var ringCooldown = false;
+    ringBtn.addEventListener("click", function(){
+      if (ringCooldown) return;
+      var payload = {
+        clientId: myClientId,
+        from: myRole,
+        emoji: selectedOption.emoji,
+        text: selectedOption.text,
+        ts: Date.now()
+      };
+
+      if (mqttClient && mqttClient.connected){
+        mqttClient.publish(mqttTopic, JSON.stringify(payload));
+      }
+      // sempre scritto anche in localStorage, per il canale multi-tab di test
+      localStorage.setItem(STORAGE_LAST_PING, JSON.stringify(payload));
+
+      showSentToast();
+      cooldown();
+    });
+
+    function showSentToast(){
+      sentToast.classList.add("show");
+      setTimeout(function(){ sentToast.classList.remove("show"); }, 2200);
+    }
+
+    function cooldown(){
+      ringCooldown = true;
+      ringBtn.disabled = true;
+      setTimeout(function(){
+        ringCooldown = false;
+        ringBtn.disabled = false;
+      }, 2500);
+    }
+
+    /* ---------------- Ricezione squillo ---------------- */
+    function handleIncomingRing(payload){
+      ringEmoji.textContent = payload.emoji || "❤️";
+      ringText.textContent = payload.text || "";
+      ringOverlay.classList.remove("hidden");
+
+      document.body.classList.remove("ring-flash");
+      void document.body.offsetWidth; // forza il replay dell'animazione
+      document.body.classList.add("ring-flash");
+
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+
+      clearTimeout(handleIncomingRing._t);
+      handleIncomingRing._t = setTimeout(closeRingOverlay, 4500);
+    }
+
+    function closeRingOverlay(){
+      ringOverlay.classList.add("hidden");
+      document.body.classList.remove("ring-flash");
+    }
+    ringOverlay.addEventListener("click", closeRingOverlay);
+
+    /* ---------------- Ripristino sessione salvata ---------------- */
+    (function init(){
+      var savedCode = localStorage.getItem(STORAGE_CODE);
+      var savedRole = localStorage.getItem(STORAGE_ROLE);
+      if (savedCode && savedRole && AVATARS[savedRole]){
+        startApp(savedCode, savedRole);
+      } else {
+        updateSetupPreview();
+      }
+    })();
+
+  })();
+  </script>
+</body>
+</html>
